@@ -6,7 +6,7 @@ import {
 	parseRecord,
 } from '@tweakpane/core';
 
-import { PreviewSelectController } from './controller.js';
+import {PreviewSelectController} from './controller.js';
 
 export interface PluginPreviewSelectParams extends BaseInputParams {
 	view: 'preview-select';
@@ -44,7 +44,8 @@ export const PluginPreviewSelect: InputBindingPlugin<
 
 	binding: {
 		reader(_args) {
-			return (exValue: unknown): string | number => (isValidValue(exValue) ? exValue : '');
+			return (exValue: unknown): string | number =>
+				isValidValue(exValue) ? exValue : '';
 		},
 
 		writer(_args) {
@@ -84,10 +85,9 @@ function parseParams(params: Record<string, unknown>) {
 function parseOptions(params: Record<string, unknown>, p: any) {
 	const options = params.options as (string | number)[] | undefined;
 	if (options && typeof options[0] === 'string') {
-	  return p.required.array(p.required.string);
+		return p.required.array(p.required.string);
 	} else if (options && typeof options[0] === 'number') {
-	  return p.required.array(p.required.number);
+		return p.required.array(p.required.number);
 	}
 	return p.required.array(p.required.string); // Default to string array
-  }
-  
+}

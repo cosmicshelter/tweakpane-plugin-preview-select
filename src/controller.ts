@@ -1,13 +1,7 @@
-import {
-	Controller,
-	Value,
-	ViewProps,
-
-} from '@tweakpane/core';
-import { PreviewSelectView } from './view.js';
+import {Controller, Value, ViewProps} from '@tweakpane/core';
 
 import {PluginPreviewSelectParams} from './plugin.js';
-
+import {PreviewSelectView} from './view.js';
 
 interface Config {
 	value: Value<string | number>;
