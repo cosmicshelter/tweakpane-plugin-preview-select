@@ -1,4 +1,4 @@
-import {TemplateInputPlugin} from './plugin.js';
+import {PluginPreviewSelect} from './plugin.js';
 
 // The identifier of the plugin bundle.
 export const id = 'template';
@@ -8,4 +8,4 @@ export const id = 'template';
 export const css = '__css__';
 
 // Export your plugin(s) as a constant `plugins`
-export const plugins = [TemplateInputPlugin];
+export const plugins = [PluginPreviewSelect];

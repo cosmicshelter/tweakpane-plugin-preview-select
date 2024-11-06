@@ -3,25 +3,65 @@
 <head>
 	<meta charset="UTF-8">
 	<title></title>
+	<link rel="stylesheet" href="style.css">
+
 </head>
+
 <body>
+	<div class='container'>
+		<h1> Preview Select Tweakpane </h1>
+		<p> First value: 
+			<span class='js-select-1'> 0<span/>
+		</p>
+		<p> Second value: 
+			<span class='js-select-2'> 0<span/>
+		</p>
+	 </div>
 	<script type="module">
 		import {Pane} from '../node_modules/tweakpane/dist/tweakpane.min.js';
-		import * as TweakpaneTemplatePlugin from '../dist/tweakpane-plugin-template.js';
-
-		const params = {
-			prop: 3,
-		};
+		import * as TweakpanePreviewSelectPlugin from '../dist/tweakpane-plugin-preview-select.js';
 
 		const pane = new Pane();
-		// Register plugin
-		pane.registerPlugin(TweakpaneTemplatePlugin);
+		pane.registerPlugin(TweakpanePreviewSelectPlugin);
 
-		// TODO: Update parameters for your plugin
-		pane.addBinding(params, 'prop', {
-			view: 'dots',
+		// example with preview image
+		const options = [
+			'100', '200', '300'
+		]
+		const initialOption = {
+			value: '100'
+		}
+		pane.addBinding(initialOption, 'value', {
+			label: 'Image',
+			view: 'preview-select',
+			previewBaseUrl: 'https://placehold.co/',
+			showPreview: true,
+			objectFit: 'cover',
+			height: 50,
+			options,
 		}).on('change', (ev) => {
-			console.log(ev.value);
+			document.querySelector('.js-select-1').innerHTML = ev.value;
+		});
+
+
+		pane.addBlade({
+			view: 'separator',
+		});
+		
+		// example without image
+		const options2 = [
+			1, 2, 3
+		]
+		const initialOption2 = {
+			value: 1
+		}
+
+		pane.addBinding(initialOption2, 'value', {
+			label: 'Number',
+			view: 'preview-select',
+			options: options2,
+		}).on('change', (ev) => {
+			document.querySelector('.js-select-2').innerHTML = ev.value;
 		});
 
 		window.pane = pane;

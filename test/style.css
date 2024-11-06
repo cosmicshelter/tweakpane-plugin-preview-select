@@ -1,0 +1,14 @@
+body {
+    background-color: black;
+    color: white;
+    font-family: sans-serif;
+}
+
+.container {
+    width: 500px;
+
+    padding-top: 100px;
+    margin: auto;
+    text-align: center;
+}
+

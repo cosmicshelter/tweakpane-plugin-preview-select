@@ -1,86 +1,68 @@
-# Tweakpane plugin template
-Plugin template of an input binding for [Tweakpane][tweakpane].
+# Tweakpane preview select plugin
 
-
-# For plugin developers
-TODO: Delete this section before publishing your plugin.
-
-
-## Quick start
-- Install dependencies:
-  ```
-  % npm install
-  ```
-- Build source codes and watch changes:
-  ```
-  % npm start
-  ```
-- Open `test/browser.html` to see the result.
-
-
-## File structure
-```
-|- src
-|  |- sass ............ Plugin CSS
-|  |- index.ts ........ Entrypoint
-|  |- plugin.ts ....... Plugin
-|  |- controller.ts ... Controller for the custom view
-|  `- view.ts ......... Custom view
-|- dist ............... Compiled files
-`- test
-   `- browser.html .... Plugin labo
-```
-
-
-## Version compatibility
-
-| Tweakpane | plugin-template |
-| --------- | --------------- |
-| 4.x       | [main](https://github.com/tweakpane/plugin-template/tree/main) |
-| 3.x       | [v3](https://github.com/tweakpane/plugin-template/tree/v3) |
-
+Plugin for previewing select inputs on hover for [Tweakpane](https://tweakpane.github.io/docs/).
 
 # For plugin users
 
-
 ## Installation
 
-
-### Browser
-```html
-<script type="module">
-  import {Pane} as Tweakpane from './tweakpane.min.js';
-  import * as TweakpaneTemplatePlugin from './tweakpane-plugin-template.min.js';
-
-  const pane = new Pane();
-  pane.registerPlugin(TweakpaneTemplatePlugin);
-</script>
+```bash
+npm install tweakpane
+npm i tweakpane-plugin-preview-select
 ```
 
-
-### Package
 ```js
 import {Pane} from 'tweakpane';
-import * as TemplatePlugin from 'tweakpane-plugin-template';
+import * as TweakpanePreviewSelectPlugin from 'tweakpane-plugin-preview-select';
 
 const pane = new Pane();
-pane.registerPlugin(TemplatePlugin);
+pane.registerPlugin(TweakpanePreviewSelectPlugin);
 ```
-
 
 ## Usage
-```js
-const params = {
-  prop: 3,
-};
 
-// TODO: Update parameters for your plugin
-pane.addInput(params, 'prop', {
-  view: 'dots',
-}).on('change', (ev) => {
-  console.log(ev.value);
-});
+### Example with image preview
+
+```js
+		const options = [
+			'100', '200', '300'
+		]
+		const initialOption = {
+			value: '100'
+		}
+		pane.addBinding(initialOption, 'value', {
+			label: 'Image',
+			view: 'custom-select',
+			previewBaseUrl: 'https://placehold.co/',
+			showPreview: true,
+			objectFit: 'cover',
+			height: 50,
+			options,
+		}).on('change', (ev) => {
+			console.log(ev.value);
+		});
 ```
 
+### Example without image preview
 
-[tweakpane]: https://github.com/cocopon/tweakpane/
+```js
+		const options2 = [
+			1, 2, 3
+		]
+		const initialOption2 = {
+			value: 1
+		}
+
+		pane.addBinding(initialOption2, 'value', {
+			label: 'Number',
+			view: 'preview-select',
+			options: options2,
+		}).on('change', (ev) => {
+						console.log(ev.value);
+
+		});
+```
+
+## Todo
+
+- Accept objects (currently supporting only arrays of strings or numbers)

@@ -1,61 +1,106 @@
 // Import core styles
 @use '../../node_modules/@tweakpane/core/lib/sass/tp';
 
-// Additional style for the plugin
+// Additional styles for the custom select plugin
 .#{tp.$prefix}-tmpv {
-	// Extend a general input view style
-	@extend %tp-input;
 
-	cursor: pointer;
-	display: grid;
-	grid-template-columns: repeat(10, 1fr);
-	grid-template-rows: repeat(auto-fit, 10px);
-	height: calc(#{tp.cssVar('container-unit-size')} * 3);
-	overflow: hidden;
 	position: relative;
+	display: inline-block;
+	width: 100%;
+	user-select: none;
+	background-color: transparent;
 
 	&.#{tp.$prefix}-v-disabled {
 		opacity: 0.5;
+		cursor: not-allowed;
 	}
 
-	&_text {
-		// You can use CSS variables for styling. See declarations for details:
-		// ../../node_modules/@tweakpane/core/lib/sass/common/_defs.scss
-		color: tp.cssVar('input-fg');
+	&_preview-container {
+		align-items: center;
+		width: 100%;
+		position: relative;
+		height: 150px;
+		margin-bottom: tp.cssVar('container-unit-spacing');
+	}
 
-		bottom: 2px;
-		font-size: 0.9em;
-		line-height: 0.9;
-		opacity: 0.5;
+	&_preview-image {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		border-radius: 4px;
+		object-fit: cover;
+	}
+
+
+	&_select-container{
+		position: relative;
+	}
+
+	&_dropdown-arrow{
 		position: absolute;
 		right: 2px;
-	}
-	&_dot {
-		height: 10px;
-		line-height: 10px;
-		position: relative;
-		text-align: center;
-
-		&::before {
-			background-color: tp.cssVar('input-fg');
-			content: '';
-			border-radius: 1px;
-			height: 2px;
-			left: 50%;
-			margin-left: -1px;
-			margin-top: -1px;
+		top: 50%;
+		transform: translateY(-50%);
+		pointer-events: none;
+		svg{
+			bottom: 0;
+			height: 16px;
+			margin: auto;
 			position: absolute;
-			top: 50%;
-			width: 2px;
+			right: 0;
+			top: 0;
+			width: 16px;
 		}
 	}
-	&_frac {
-		background-color: tp.cssVar('input-fg');
-		border-radius: 1px;
-		height: 2px;
-		left: 50%;
-		margin-top: -1px;
+	
+	&_current-label {
+		background-color: tp.cssVar('button-bg');
+    	border-radius: tp.cssVar('button-bg');
+    	color: var(--btn-fg);
+		padding: calc(#{tp.cssVar('container-h-padding')} / 2) calc(#{tp.cssVar('container-v-padding')} / 2); // Using horizontal and vertical padding CSS variables
+		border-radius: tp.cssVar('blade-border-radius');
+		font-size: 0.9em;
+		transition: background-color 0.2s;
+		flex-grow: 1;
+		padding: 5px;
+		cursor: pointer;
+
+		&:hover {
+			background-color: tp.cssVar('button-bg-hover');
+		}
+	}
+	&_options-container {
+		background-color: tp.cssVar('base-bg');
+		border: 1px solid tp.cssVar('input-bg');
+		border-radius: tp.cssVar('blade-border-radius');
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 		position: absolute;
-		top: 50%;
+		top: 100%;
+		left: 0;
+		right: 0;
+		z-index: 1000;
+		max-height: 200px;
+		overflow-y: auto;
+		display: none;
+
+		&.#{tp.$prefix}-options-active {
+			display: block;
+		}
+	}
+
+	&_option-item {
+		padding: calc(#{tp.cssVar('container-h-padding')} / 2); // Using horizontal padding CSS variable for each item
+		cursor: pointer;
+		color: tp.cssVar('input-fg');
+		background-color: tp.cssVar('input-bg');
+		transition: background-color 0.2s;
+		padding: 5px;
+		&:hover {
+			background-color: tp.cssVar('container-bg-active');
+		}
+
+		&:active {
+			background-color: tp.cssVar('button-bg-active');
+		}
 	}
 }

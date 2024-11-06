@@ -1,8 +1,8 @@
 {
-  "name": "tweakpane-plugin-template",
+  "name": "tweakpane-plugin-preview-select",
   "version": "0.0.0",
-  "description": "Plugin template for Tweakpane",
-  "main": "dist/tweakpane-plugin-template.js",
+  "description": "Plugin preview Select for Tweakpane",
+  "main": "dist/tweakpane-plugin-preview-select.js",
   "type": "module",
   "types": "dist/types/index.d.ts",
   "author": "cocopon",

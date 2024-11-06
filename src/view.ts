@@ -1,80 +1,201 @@
-import {ClassName, mapRange, Value, View, ViewProps} from '@tweakpane/core';
+import { ClassName, Value, View, ViewProps } from '@tweakpane/core';
 
 interface Config {
-	value: Value<number>;
-	viewProps: ViewProps;
+    value: Value<string | number>;
+    viewProps: ViewProps;
+    options: (string | number)[];
+    params: { previewBaseUrl?: string, height?: number, objectFit?: string, showPreview?: boolean };
 }
 
-// Create a class name generator from the view name
-// ClassName('tmp') will generate a CSS class name like `tp-tmpv`
 const className = ClassName('tmp');
 
-// Custom view class should implement `View` interface
-export class PluginView implements View {
-	public readonly element: HTMLElement;
-	private value_: Value<number>;
-	private dotElems_: HTMLElement[] = [];
-	private textElem_: HTMLElement;
+export class PreviewSelectView implements View {
+    // Static Set to keep track of open dropdown instances
+    private static openDropdowns: Set<PreviewSelectView> = new Set();
 
-	constructor(doc: Document, config: Config) {
-		// Create a root element for the plugin
-		this.element = doc.createElement('div');
-		this.element.classList.add(className());
-		// Bind view props to the element
-		config.viewProps.bindClassModifiers(this.element);
+    public readonly element: HTMLElement;
+    private value_: Value<string | number>;
+    private params_: { previewBaseUrl?: string, height?: number, objectFit?: string, showPreview?: boolean };
+    private previewContainer_: HTMLElement;
+    private previewImage_: HTMLImageElement;
+    private dropdown_: HTMLElement;
+    private selectContainer_: HTMLElement;
+    private optionsContainer_: HTMLElement;
 
-		// Receive the bound value from the controller
-		this.value_ = config.value;
-		// Handle 'change' event of the value
-		this.value_.emitter.on('change', this.onValueChange_.bind(this));
+    constructor(doc: Document, config: Config) {
+        this.params_ = config.params;
+        this.value_ = config.value;
 
-		// Create child elements
-		this.textElem_ = doc.createElement('div');
-		this.textElem_.classList.add(className('text'));
-		this.element.appendChild(this.textElem_);
+        if (!this.value_.rawValue && config.options.length > 0) {
+            this.value_.setRawValue(config.options[0]);
+        }
 
-		// Apply the initial value
-		this.refresh_();
+        this.element = this.createElement_(doc);
+        config.viewProps.bindClassModifiers(this.element);
 
-		config.viewProps.handleDispose(() => {
-			// Called when the view is disposing
-			console.log('TODO: dispose view');
-		});
-	}
+        this.previewContainer_ = this.createPreviewContainer_(doc);
+        this.element.appendChild(this.previewContainer_);
 
-	private refresh_(): void {
-		const rawValue = this.value_.rawValue;
+        this.previewImage_ = this.createPreviewImage_(doc);
+        this.previewContainer_.appendChild(this.previewImage_);
 
-		this.textElem_.textContent = rawValue.toFixed(2);
+        this.selectContainer_ = this.createSelectContainer_(doc);
+        this.element.appendChild(this.selectContainer_);
 
-		while (this.dotElems_.length > 0) {
-			const elem = this.dotElems_.shift();
-			if (elem) {
-				this.element.removeChild(elem);
-			}
-		}
+        this.dropdown_ = this.createDropdown_(doc);
+        this.selectContainer_.appendChild(this.dropdown_);
 
-		const doc = this.element.ownerDocument;
-		const dotCount = Math.floor(rawValue);
-		for (let i = 0; i < dotCount; i++) {
-			const dotElem = doc.createElement('div');
-			dotElem.classList.add(className('dot'));
+        this.optionsContainer_ = this.createOptionsContainer_(doc);
+        this.selectContainer_.appendChild(this.optionsContainer_);
 
-			if (i === dotCount - 1) {
-				const fracElem = doc.createElement('div');
-				fracElem.classList.add(className('frac'));
-				const frac = rawValue - Math.floor(rawValue);
-				fracElem.style.width = `${frac * 100}%`;
-				fracElem.style.opacity = String(mapRange(frac, 0, 1, 1, 0.2));
-				dotElem.appendChild(fracElem);
-			}
+        this.populateOptions_(doc, config.options);
 
-			this.dotElems_.push(dotElem);
-			this.element.appendChild(dotElem);
-		}
-	}
+        this.setupEventListeners_();
+        this.refresh_();
 
-	private onValueChange_() {
-		this.refresh_();
-	}
+        config.viewProps.handleDispose(() => {
+            this.removeEventListeners_();
+        });
+    }
+
+    private refresh_(): void {
+        this.dropdown_.textContent = String(this.value_.rawValue);
+
+        if (this.params_.showPreview && this.value_.rawValue && this.params_.previewBaseUrl) {
+            this.previewContainer_.style.display = 'block';
+            this.previewImage_.src = this.params_.previewBaseUrl + this.value_.rawValue;
+            this.previewImage_.alt = String(this.value_.rawValue);
+        } else {
+            this.previewContainer_.style.display = 'none';
+        }
+    }
+
+    private createElement_(doc: Document): HTMLDivElement {
+        const element = doc.createElement('div');
+        element.classList.add(className());
+        return element;
+    }
+
+    private createPreviewContainer_(doc: Document): HTMLElement {
+        const container = doc.createElement('div');
+        container.classList.add(className('preview-container'));
+        if (this.params_.height) container.style.height = `${this.params_.height}px`;
+        return container;
+    }
+
+    private createPreviewImage_(doc: Document): HTMLImageElement {
+        const image = doc.createElement('img');
+        image.classList.add(className('preview-image'));
+        image.style.position = 'absolute';
+        image.style.pointerEvents = 'none';
+        image.style.left = '0';
+        image.style.top = '0';
+        image.style.objectFit = this.params_.objectFit || 'cover';
+        return image;
+    }
+
+    private createSelectContainer_(doc: Document): HTMLElement {
+        const container = doc.createElement('div');
+        container.classList.add(className('select-container'));
+        return container;
+    }
+
+    private createDropdown_(doc: Document): HTMLElement {
+        const dropdown = doc.createElement('div');
+        dropdown.classList.add(className('current-label'));
+
+        const svgContainer = doc.createElement('div');
+        svgContainer.classList.add(className('dropdown-arrow'));
+        const svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
+
+        const path = doc.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", "M5 7h6l-3 3 z");
+        path.setAttribute("fill", "#333");
+
+        svg.appendChild(path);
+        svgContainer.appendChild(svg);
+        this.selectContainer_.appendChild(svgContainer);
+
+        return dropdown;
+    }
+
+    private createOptionsContainer_(doc: Document): HTMLElement {
+        const container = doc.createElement('div');
+        container.classList.add(className('options-container'));
+        return container;
+    }
+
+    private populateOptions_(doc: Document, options: (string | number)[]): void {
+        options.forEach((option) => {
+            const optionElement = doc.createElement('div');
+            optionElement.classList.add(className('option-item'));
+            optionElement.textContent = String(option);
+            this.optionsContainer_.appendChild(optionElement);
+
+            optionElement.addEventListener('click', () => {
+                this.value_.setRawValue(option);
+                this.closeDropdown();
+                this.refresh_();
+            });
+
+            optionElement.addEventListener('mouseover', () => {
+                if (this.params_.showPreview && this.params_.previewBaseUrl) {
+                    this.previewImage_.src = this.params_.previewBaseUrl + option;
+                    this.previewImage_.alt = String(option);
+                }
+                this.value_.setRawValue(option);
+            });
+        });
+    }
+
+    private setupEventListeners_(): void {
+        this.dropdown_.addEventListener('click', (event) => {
+            event.stopPropagation();
+            this.toggleDropdown_();
+        });
+
+        document.addEventListener('click', this.documentClickHandler_);
+        this.value_.emitter.on('change', this.valueChangedHandler_);
+    }
+
+    private toggleDropdown_(): void {
+        const isActive = this.optionsContainer_.classList.contains('tp-options-active');
+
+        PreviewSelectView.openDropdowns.forEach((dropdown) => {
+            if (dropdown !== this) {
+                dropdown.closeDropdown();
+            }
+        });
+
+        if (isActive) {
+            this.closeDropdown();
+        } else {
+            this.openDropdown();
+        }
+    }
+
+    private openDropdown(): void {
+        this.optionsContainer_.classList.add('tp-options-active');
+        PreviewSelectView.openDropdowns.add(this);
+    }
+
+    private closeDropdown(): void {
+        this.optionsContainer_.classList.remove('tp-options-active');
+        PreviewSelectView.openDropdowns.delete(this);
+    }
+
+    private documentClickHandler_ = (event: MouseEvent): void => {
+        if (!this.element.contains(event.target as Node)) {
+            this.closeDropdown();
+        }
+    };
+
+    private valueChangedHandler_ = (): void => {
+        this.refresh_();
+    };
+
+    private removeEventListeners_(): void {
+        document.removeEventListener('click', this.documentClickHandler_);
+        this.value_.emitter.off('change', this.valueChangedHandler_);
+    }
 }
