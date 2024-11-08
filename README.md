@@ -34,6 +34,7 @@ pane.addBinding(initialOption, 'value', {
 	label: 'Image',
 	view: 'preview-select',
 	previewBaseUrl: 'https://placehold.co/',
+	token: '123456'
 	showPreview: true,
 	objectFit: 'cover',
 	height: 50,

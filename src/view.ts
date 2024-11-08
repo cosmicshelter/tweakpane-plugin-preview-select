@@ -6,6 +6,7 @@ interface Config {
 	options: (string | number)[];
 	params: {
 		previewBaseUrl?: string;
+		token?: string;
 		height?: number;
 		objectFit?: string;
 		showPreview?: boolean;
@@ -21,6 +22,7 @@ export class PreviewSelectView implements View {
 	private value_: Value<string | number>;
 	private params_: {
 		previewBaseUrl?: string;
+		token?: string;
 		height?: number;
 		objectFit?: string;
 		showPreview?: boolean;
@@ -77,8 +79,15 @@ export class PreviewSelectView implements View {
 			this.params_.previewBaseUrl
 		) {
 			this.previewContainer_.style.display = 'block';
-			this.previewImage_.src =
-				this.params_.previewBaseUrl + this.value_.rawValue;
+			if (this.params_.token) {
+				this.previewImage_.src =
+					this.params_.previewBaseUrl +
+					this.value_.rawValue +
+					this.params_.token;
+			} else {
+				this.previewImage_.src =
+					this.params_.previewBaseUrl + this.value_.rawValue;
+			}
 			this.previewImage_.alt = String(this.value_.rawValue);
 		} else {
 			this.previewContainer_.style.display = 'none';
@@ -156,10 +165,6 @@ export class PreviewSelectView implements View {
 				this.refresh_();
 			});
 			optionElement.addEventListener('mouseover', () => {
-				if (this.params_.showPreview && this.params_.previewBaseUrl) {
-					this.previewImage_.src = this.params_.previewBaseUrl + option;
-					this.previewImage_.alt = String(option);
-				}
 				this.value_.setRawValue(option);
 			});
 		});

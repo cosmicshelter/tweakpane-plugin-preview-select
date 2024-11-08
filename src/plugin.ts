@@ -11,6 +11,7 @@ import {PreviewSelectController} from './controller.js';
 export interface PluginPreviewSelectParams extends BaseInputParams {
 	view: 'preview-select';
 	previewBaseUrl?: string;
+	token?: string;
 	height?: number;
 	objectFit?: string;
 	showPreview?: boolean;
@@ -75,6 +76,7 @@ function parseParams(params: Record<string, unknown>) {
 	return parseRecord<PluginPreviewSelectParams>(params, (p) => ({
 		view: p.required.constant('preview-select'),
 		previewBaseUrl: p.optional.string,
+		token: p.optional.string,
 		objectFit: p.optional.string,
 		showPreview: p.optional.boolean,
 		height: p.optional.number,
